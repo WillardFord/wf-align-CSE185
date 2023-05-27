@@ -21,7 +21,7 @@ def main():
     # Inputs
 
     # TODO What happens if I call this method without providing sample methods.
-    parser.add_argument("fa", "fasta-ref",\
+    parser.add_argument("fasta-ref",\
                         help="This is a fasta file representing the reference genome to "\
                         "align your reads back to. For more "\
                         "information about the fasta file format: "\
@@ -82,17 +82,21 @@ def main():
     header = utils.GET_FASTA_HEADER()
     outf.write(header)
 
-    # Create BWA array of ref
-    ref_length = 0 # TODO
+    # Create BWT array of ref # TODO
+    fasta_header = ref_fasta.readline().strip()
+    reference = ref_fasta.read().strip()
+    print(reference)
+    # Create FM Indeex
 
     print("hello")
 
    
    
 
-    # 3) Align genomes 
+    # Align genomes 
 
     # 
 
 
-    
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,2 @@
+[console_scripts]
+wf-align = wfalign.wfalign:main
