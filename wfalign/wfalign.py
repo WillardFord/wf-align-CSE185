@@ -2,16 +2,13 @@
 """
 Command-line script to perform alignment of fastq reads to a reference genome
 
-Similar to bwa-mem
+Similar to bwa alignment
 """
-
 
 import argparse
 from . import utils as utils
-# from mypileup import __version__ How does this work?
 import os
 import sys
-import numpy as np
 
 def main():
     parser = argparse.ArgumentParser(
@@ -74,15 +71,6 @@ def main():
                     .format(fastq=args.fastq))
     fastq = open(args.fastq, "r")
 
-    # Perform alignment
-
-    # Read in fasta file. Ignore header line. Ignore lines that start with ">"
-    # TODO
-    fasta_header = ref_fasta.readline().strip()
-    reference = ref_fasta.read().replace("\n","")
-    ref_fasta.close()
-
-    N = len(reference)
 
     # Write header lines to output
     # Simply grab codes from https://samtools.github.io/hts-specs/SAMv1.pdf
@@ -90,15 +78,51 @@ def main():
     outf.write(sam_header)
     del sam_header
 
+
+    # Read in fasta file.
+
+    rname = "*"
+    reference = ""
+
+    # list of lists: [rname, reference, sa, bwt, f_bwt]
+    # Reference Name, Reference, Suffix Array, Burrows Wheler Transform, 
+    # First Column of BWT Matrix, Last to First
+    ref_data = []
+
+    for line in ref_fasta.readlines():
+        if line[0] == ">":
+            if reference != "":
+                N = len(reference)
+                # Construct Suffix Array
+                sa = utils.SUFFIX_ARRAY(reference, N)
+
+                # Create BWT array of ref
+                bwt = utils.BURROWS_WHEELER(reference, sa, N)
+                # Reconstruct first column of bwt matrix
+                f_bwt = utils.RADIX_SORT(bwt, N)
+                ltf = utils.LAST2FIRST(bwt, f_bwt, N)
+                ref_data.append([rname, reference, sa, bwt, f_bwt, ltf])
+            reference = ""
+            rname = line[1:-1] # don't grab \n char
+        else:
+            reference += line.replace("\n","") # Last line might not have \n
+    
+    # Because we only add aux data structures when we reach the next chromosome,
+    # we manually add the last one here which has no subsequent chromosome.
+    N = len(reference)
     # Construct Suffix Array
     sa = utils.SUFFIX_ARRAY(reference, N)
-
     # Create BWT array of ref
     bwt = utils.BURROWS_WHEELER(reference, sa, N)
+    # Reconstruct first column of bwt matrix
     f_bwt = utils.RADIX_SORT(bwt, N)
+    ltf = utils.LAST2FIRST(bwt, f_bwt, N)
+    ref_data.append([rname, reference, sa, bwt, f_bwt, ltf])
 
+    ref_fasta.close()
 
-    # Find matches using BWT TODO
+    # Perform alignment TODO
+
     qname = ""  # Line 1
     seq = ""    # Line 2
     quals = ""  # Line 4
@@ -109,17 +133,36 @@ def main():
         if line_num % 4 == 0:
             qname = line[1:-1]  # Don't grab \n character
         elif line_num % 4 == 1:
-            seq = line
+            seq = line[:-1]     # Don't grab \n character
         elif line_num % 4 == 2:
             continue
         else:
-            quals = line
-            # Now use all previous info to align
-            loc:int = utils.FIND()
-            outf.write(utils.GET_ALIGNMENT(
-                QNAME=qname, 
-            ))
+            # can't slice because last line might not have \n character
+            quals = line.replace("\n","")   
 
+            # Now use all previous info to align
+            loc:int = 0
+            for i in range(len(ref_data)):
+                # ref_data = [rname, reference, sa, bwt, f_bwt, ltf]
+                loc = utils.FIND( # Only finds exact matches
+                    REF=ref_data[i][1], SA=ref_data[i][2], 
+                    BWT=ref_data[i][3], F_BWT=ref_data[i][4]
+                    LTF=ref_data[i][5]
+                )
+                if loc > 0:
+                    outf.write(utils.GET_ALIGNMENT(
+                        QNAME=qname, TEMPLATE=seq, QUAL=quals, POS=loc,
+                        RNAME= ref_data[0],
+                    ))
+                    break
+            # If no exact match was found
+            if loc == 0:
+                outf.write(utils.GET_ALIGNMENT(
+                        QNAME=qname, TEMPLATE=seq, QUAL=quals, POS=loc,
+                        RNAME= "*",
+                    ))
+
+    ref_fasta.close()
 
 if __name__ == '__main__':
     main()

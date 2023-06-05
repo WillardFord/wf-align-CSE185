@@ -2,6 +2,7 @@
 Utilities for align
 """
 import sys
+import numpy as np
 
 class bcolors:
     HEADER = '\033[95m'
@@ -234,7 +235,7 @@ def RADIX_SORT(BWT:list, N:int) -> list:
         i -= 1
     return output
 
-def FIND() -> int: #TODO
+def FIND(REF:str, SA:list, BWT:list, F_BWT:list, LTF:list) -> int: #TODO
     """
     Returns int representing first index of first character of
     instance of sequence in reference
@@ -247,44 +248,92 @@ def FIND() -> int: #TODO
         Length of BWT. len(BWT)
     """
     # TODO
-    pass
+    found:bool = False
+    
+    if not found:
+       return 0
 
-def GET_ALIGNMENT(QNAME:str) -> str: #TODO
+def LAST2FIRST(F_BWT:list, BWT:list, N:int) -> list:
+    """
+    Returns list of integers that denote where in F_BWT each character in BWT 
+    is located. Method inspired by setting up checkpoints from this video:
+
+    https://www.youtube.com/watch?v=byNR4CbYiPQ
+
+    Parameters
+    ----------
+    F_BWT : list
+        First column of BWT matrix
+    BWT : str
+        Last column of BWT matrix
+    N : int
+        Length of BWT. len(BWT)
+    M : int
+        Length of a typical read
+    """
+    # TODO Default M will need to be adjusted as we use different data types.
+    dic = {"A":0,"T":1,"C":2,"G":3,"N":4}
+    output = [0, 0, 0, 0, 0]*N//M
+    counts = [[0]*N//M]*5 # A, T, C, G
+    i = 0
+    j = 0
+    while i < N//M :
+        j = 0
+        while j < M and i*M+j < N :
+            counts[
+                dic[REF[    F_BWT[i*M+j]    ]]][i] += 1
+            j += 1
+        i += 1
+    
+
+
+
+def GET_ALIGNMENT(QNAME:str, TEMPLATE:str, QUAL:str, POS:int,
+                  RNAME:str) -> str: #TODO
     """
     Returns tabular data of string alignment information according to 
     section 1.4 of the SAM file format specs:
     https://samtools.github.io/hts-specs/SAMv1.pdf
 
     Parameters
-    ---------- TODO
+    ----------
     QNAME : str
         Query Name that corresponds to the read id in the fastq file input
-    N : int
-        Length of BWT. len(BWT)
+    TEMPLATE : str
+        This string stores the read that we aligned to the reference genome
+    QUAL : str
+        Quality scores taken directly from the fastq file.
+        e.g. if given illumina reads, quality score decoding found from Illumina
+    POS : int
+        Mapped alignment location in the corresponding RNAME
+    RNAME : int
+        Reference Name. Often of the format Chr1 or 1.
     """
     output = ""
     # 1 QNAME String 
     output += QNAME + "\t"
-    # 2 FLAG Int
-
+    # 2 FLAG Int TODO flags need to be determined
+    output += str(0) + "\t"
     # 3 RNAME String
-    
+    output += RNAME + "\t"
     # 4 POS Int
-    
-    # 5 MAPQ Int
-    
+    output += str(POS) + "\t"
+    # 5 MAPQ Int TODO 
+    #   It looks like there is no standard way to implement these so I'll hold
+    #   off until my tool is a little more developed.
+    output += str(255) + "\t"
     # 6 CIGAR String
-    
-    # 7 RNEXT String
-    
-    # 8 PNEXT Int
-    
+    output += str(len(TEMPLATE)) + "M" + "\t"
+    # 7 RNEXT String TODO This is the location of the "next sequence"
+    output += str(0) + "\t"
+    # 8 PNEXT Int TODO This is the location of the "next sequence"
+    output += str(0) + "\t"
     # 9 TLEN Int
-    
+    output += str(len(TEMPLATE)) + "\t"
     # 10 SEQ String
-    
+    output += TEMPLATE + "\t"
     # 11 QUAL
-
+    output += QUAL + "\t"
 
     return output + "\n"
 
