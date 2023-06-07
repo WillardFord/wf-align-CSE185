@@ -2,6 +2,7 @@
 Utilities for align
 """
 import sys
+import time
 
 class bcolors:
     HEADER = '\033[95m'
@@ -232,7 +233,7 @@ def BURROWS_WHEELER(REF:str, SA:list,  N:int) -> list:
     return bwt
 
 """
-Class to original indices and value for generating last 2 first vector
+Class to store original indices and value. Used for generating last to first vector
 """
 class l2f_aux:
     def __init__(self, i:int, val:str):
@@ -320,7 +321,7 @@ def FIND(SA:list, BWT:list, LTF:list, C:list,
     min = C[dic[PATTERN[M-1]]]
     max = C[dic[PATTERN[M-1]]+1]
 
-    multiple_matches = False
+    #multiple_matches = False
     matches = range(min, max)
     for i in range(1, M):
         new_matches = []
@@ -330,14 +331,14 @@ def FIND(SA:list, BWT:list, LTF:list, C:list,
                 new_matches.append(LTF[j])
         # If no matches found return -1
         if len(new_matches) == 0:
-            return -1, multiple_matches
+            return -1 #, multiple_matches
         matches = new_matches
 
     # Denote if multiple matches were found
-    if matches > 1:
-        multiple_matches = True
+    #if matches > 1:
+    #    multiple_matches = True
     # Return only first match for simplicity
-    return SA[matches[0]], multiple_matches
+    return SA[matches[0]] #, multiple_matches
 
 def GET_ALIGNMENT(QNAME:str, TEMPLATE:str, QUAL:str, POS:int,
                   RNAME:str) -> str: #TODO
@@ -389,7 +390,7 @@ def GET_ALIGNMENT(QNAME:str, TEMPLATE:str, QUAL:str, POS:int,
     return output + "\n"
 
 def GET_METRICS(TOT_RDS_LEN:int, TOT_REF_LEN:int, 
-                NUM_RDS:int, NUM_NA:float, NUM_UA:float, 
+                NUM_RDS:int, NUM_NA:float, #NUM_UA:float, 
                 A_TIME:float, AF_TIME:float, REF_TIME:float, REFB_TIME:float) -> str:
     """
     Takes inputs of several recorded data figures to calculate important metrics and
@@ -410,21 +411,42 @@ def GET_METRICS(TOT_RDS_LEN:int, TOT_REF_LEN:int,
     A_TIME : float
         Time spent aligning reads and outputing to sam file
     AF_TIME : float
-        Percent of A_TIME spent actually finding alignments
+        Time spent actually finding alignments
     REF_TIME : float
         Time spent reading from reference file and building auxilury data structures
     REFB_TIME : float
-        Percent of REF_TIME actually spent building auxilury data structures
+        Time actually spent building auxilury data structures
     """
 
     metrics = ""
 
+    # Header Line
+    cur_time = time.strftime("%d:%H:%M")
+    metrics += "Metrics file wf-align run at " + str(cur_time) + "\n\n"
+
     # Run time metrics
 
+    metrics += "Runtime Metrics:\n"
 
+    metrics += "Total Time:\t" + str(A_TIME + REF_TIME) + "\n"
+    metrics += "IO Reference Time:\t" + str(REF_TIME - REFB_TIME) + "\n"
+    metrics += "Building Auxiliary Structures Time:\t" + str(REFB_TIME) + "\n"
+
+    metrics += "IO Reads Time:\t" + str(A_TIME - AF_TIME) + "\n"
+    metrics += "Search Algorithm Time:\t" + str(AF_TIME) + "\n"
+
+    metrics += "\n"
 
     # Accuracy metrics
+    metrics += "Accuracy Metrics:\n"
 
+    metrics += "Total Num Reads:\t" + str(NUM_RDS) + "\n"
+    metrics += "Total Length of Reads:\t" + str(TOT_RDS_LEN) + "\n"
+    metrics += "Total Length of Reference:\t" + str(TOT_REF_LEN) + "\n"
 
+    #metrics += "Percent reads uniquely aligned:\t" + (NUM_UA)/NUM_RDS + "\n"
+    #metrics += "Percent reads non-uniquely aligned:\t" + (NUM_RDS-NUM_NA-NUM_UA)/NUM_RDS + "\n"
+    metrics += "Percent reads aligned:\t" + str((NUM_RDS-NUM_NA)/NUM_RDS) + "\n"
+    metrics += "Percent reads unaligned:\t" + str((NUM_NA)/NUM_RDS) + "\n"
 
-    return ""
+    return metrics

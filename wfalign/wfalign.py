@@ -39,6 +39,9 @@ def main():
                         "Default: stdout", metavar="FILE", type = str, required=False)
 
     # Other options
+    parser.add_argument("-m", "--metrics", help="Metrics output file path name. "\
+                        "Default: None", metavar="FILE", type = str, required=False)
+
 
     # Ideas:
     #   bam output
@@ -128,12 +131,12 @@ def main():
     time_in_search = 0
 
     num_seqs = 0
-    num_uniquely_aligned = 0
+    #num_uniquely_aligned = 0
     num_unaligned = 0
     total_seq_bps = 0
 
     # Perform alignment
-
+    
     qname = ""  # Line 1 in fasta format
     seq = ""    # Line 2 in fasta format
     quals = ""  # Line 4 in fasta format
@@ -159,7 +162,7 @@ def main():
             for i in range(len(ref_data)):
                 # ref_data[i] = [Ref_Name, Suffix Array, BurrowsWheelerTransform, 
                 #                   LasttoFirst, CountVector]
-                loc, multiple_matches = utils.FIND( 
+                loc= utils.FIND( #, multiple_matches 
                     SA=ref_data[i][1], BWT=ref_data[i][2], \
                     LTF=ref_data[i][3], C=ref_data[i][4], \
                     PATTERN=seq, M=m, \
@@ -169,7 +172,7 @@ def main():
                         QNAME=qname, TEMPLATE=seq, QUAL=quals, POS=loc, \
                         RNAME= ref_data[i][0],
                     ))
-                    num_uniquely_aligned += 1 if not multiple_matches else 0
+                    #num_uniquely_aligned += 1 if not multiple_matches else 0
                     break
             find_end = time.time()
 
@@ -188,14 +191,13 @@ def main():
             num_seqs += 1
 
     outf.close()
-
     end_align = time.time()
 
 
     # Calculate Benchmarking Results
-
     fasta_time = end_fasta - start_fasta
     aligning = end_align - end_fasta
+    
     '''
     fasta_time      : Time spent loading data from fasta files and building structures
     aligning        : Time spent loading data from fastq files and aligning
@@ -217,15 +219,19 @@ def main():
     '''
 
     metrics = utils.GET_METRICS(TOT_RDS_LEN=total_seq_bps, TOT_REF_LEN=total_ref_bps, \
-                NUM_RDS=num_seqs, NUM_NA=num_unaligned, NUM_UA=num_uniquely_aligned, \
+                NUM_RDS=num_seqs, NUM_NA=num_unaligned, \
                 A_TIME=aligning, AF_TIME=time_in_search, REF_TIME=fasta_time, \
                 REFB_TIME=time_building,
-                )
+                ) #NUM_UA=num_uniquely_aligned, \
 
-    # Output Benchmarking Results
+    
+    # Set up benchmarking file
+    if args.metrics == None:
+        cur_time = time.strftime("%d:%H:%M")
+        outm = open(f"{cur_time}_wf_align_metrics.txt", "w")
+    else: outm = open(args.metrics, "w")
 
-    cur_time = time.strftime("%d:%H:%M")
-    outm = open(f"{cur_time}_wf_align_metrics.txt", "w")
+    # Output benchmarking results
     outm.write(metrics)
     outm.close()
 

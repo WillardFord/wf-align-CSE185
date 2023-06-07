@@ -57,17 +57,17 @@ To compare to output of `bwa mem`, run:
 bwa mem example-files/test_reference.fa example-files/test_reads.fastq
 ```
 
-# SARS Cov2 Example
-
-Reference genome available [here](https://www.ncbi.nlm.nih.gov/nuccore/NC_045512).
-
-
-
 # wf-align options
 
 There are 2 required inputs to `wf-align`, a reference fasta file and a fastq file containing reads. Users may additionally specify the options below:
 
 * `-o FILE`, `--output FILE`: Write output to file. By default, output is written to stdout.
+
+* `-m FILE`, `--metrics FILE`: Write metrics to file. By default, metrics are written to `{cur_time}_wf_align_metrics.txt` where cur_time is the result of `time.time()` at the end of alignment.
+
+# SARS Cov2 Example
+
+Reference genome available [here](https://www.ncbi.nlm.nih.gov/nuccore/NC_045512).
 
 # File format
 
