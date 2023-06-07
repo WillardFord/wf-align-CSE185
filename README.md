@@ -57,6 +57,12 @@ To compare to output of `bwa mem`, run:
 bwa mem example-files/test_reference.fa example-files/test_reads.fastq
 ```
 
+# SARS Cov2 Example
+
+Reference genome available [here](https://www.ncbi.nlm.nih.gov/nuccore/NC_045512).
+
+
+
 # wf-align options
 
 There are 2 required inputs to `wf-align`, a reference fasta file and a fastq file containing reads. Users may additionally specify the options below:

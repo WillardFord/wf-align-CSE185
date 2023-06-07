@@ -294,7 +294,10 @@ def FIND(SA:list, BWT:list, LTF:list, C:list,
     """
     Returns int representing first index of first character of
     instance of sequence in reference. In the output value here is 1 indexed
-    to align with SAM file consistencies
+    to align with SAM file consistencies Returns -1 if no matches were found.
+
+    Returns boolean. True indicates multiple alignments found. 
+    False indicates only one alignment was found
 
     Parameters
     ----------
@@ -317,6 +320,7 @@ def FIND(SA:list, BWT:list, LTF:list, C:list,
     min = C[dic[PATTERN[M-1]]]
     max = C[dic[PATTERN[M-1]]+1]
 
+    multiple_matches = False
     matches = range(min, max)
     for i in range(1, M):
         new_matches = []
@@ -324,12 +328,16 @@ def FIND(SA:list, BWT:list, LTF:list, C:list,
             char = BWT[j]
             if char == PATTERN[-i-1]:
                 new_matches.append(LTF[j])
+        # If no matches found return -1
         if len(new_matches) == 0:
-            return -1
+            return -1, multiple_matches
         matches = new_matches
 
-    # Find only first match for simplicity
-    return SA[matches[0]]
+    # Denote if multiple matches were found
+    if matches > 1:
+        multiple_matches = True
+    # Return only first match for simplicity
+    return SA[matches[0]], multiple_matches
 
 def GET_ALIGNMENT(QNAME:str, TEMPLATE:str, QUAL:str, POS:int,
                   RNAME:str) -> str: #TODO
@@ -380,7 +388,43 @@ def GET_ALIGNMENT(QNAME:str, TEMPLATE:str, QUAL:str, POS:int,
 
     return output + "\n"
 
-if __name__ == "__main__":
-    string = "TACAGTATCGA"
-    
-    print(SUFFIX_ARRAY(string, len(string)))
+def GET_METRICS(TOT_RDS_LEN:int, TOT_REF_LEN:int, 
+                NUM_RDS:int, NUM_NA:float, NUM_UA:float, 
+                A_TIME:float, AF_TIME:float, REF_TIME:float, REFB_TIME:float) -> str:
+    """
+    Takes inputs of several recorded data figures to calculate important metrics and
+    generate an output string for the metrics file.
+
+    Parameters
+    ----------
+    NUM_RDS : int
+        Number of reads that attempted to align
+    TOT_RDS_LEN : int
+        Total number of bp's of all reads
+    TOT_REF_LEN : int
+        Total number of bp's of reference genome.
+    NUM_NA : float
+        Num of reads Not Aligned
+    NUM_UA : float
+        Num of reads Uniquely Aligned
+    A_TIME : float
+        Time spent aligning reads and outputing to sam file
+    AF_TIME : float
+        Percent of A_TIME spent actually finding alignments
+    REF_TIME : float
+        Time spent reading from reference file and building auxilury data structures
+    REFB_TIME : float
+        Percent of REF_TIME actually spent building auxilury data structures
+    """
+
+    metrics = ""
+
+    # Run time metrics
+
+
+
+    # Accuracy metrics
+
+
+
+    return ""
