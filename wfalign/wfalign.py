@@ -17,8 +17,6 @@ def main():
     )
 
     # Inputs
-
-    # TODO What happens if I call this method without providing sample methods.
     parser.add_argument("fasta_ref",\
                         help="This is a fasta file representing the reference genome to "\
                         "align your reads back to. For more "\
@@ -92,35 +90,10 @@ def main():
     for line in ref_fasta.readlines():
         if line[0] == ">":
             if reference != "":
-                reference += "$"
-                N = len(reference)
-                # Construct Suffix Array
-                sa = utils.SUFFIX_ARRAY(reference, N)
-
-                # Create BWT array of ref
-                bwt = utils.BURROWS_WHEELER(reference, sa, N)
-                # Reconstruct first column of bwt matrix
-                f_bwt, ltf = utils.RADIX_SORT_L2F(bwt, N)
-                # Find first occurrences of each character in f_bwt
-                c = [0, 0, 0, 0, 0, N] # A, C, G, T
-                j = 0
-                for i in range(N):
-                    if j == 0 and f_bwt[i] == "A":
-                        c[j] = i
-                        j += 1
-                    if j == 1 and f_bwt[i] == "C":
-                        c[j] = i
-                        j += 1
-                    if j == 2 and f_bwt[i] == "G":
-                        c[j] = i
-                        j += 1
-                    if j == 3 and f_bwt[i] == "N":
-                        c[j] = i
-                        j += 1
-                    if j == 4 and f_bwt[i] == "T":
-                        c[j] = i
-                        j += 1
-                ref_data.append([rname, sa, bwt, ltf, c])
+                # Generate Auxilury Data Structures
+                # ref_data[i] = [Ref_Name, Suffix Array, BurrowsWheelerTransform, \
+                #                   LasttoFirst, CountVector]
+                ref_data.append(utils.GENERATE_AUXS(reference, rname))
             reference = ""
             rname = line[1:-1] # don't grab \n char
         else:
@@ -128,52 +101,21 @@ def main():
     
     # Because we only add aux data structures when we reach the next chromosome,
     # we manually add the last one here which has no subsequent chromosome.
+    ref_data.append(utils.GENERATE_AUXS(reference, rname))
 
-    reference += "$"
-    N = len(reference)
-    # Construct Suffix Array
-    sa = utils.SUFFIX_ARRAY(reference, N)
-    # Create BWT array of ref
-    bwt = utils.BURROWS_WHEELER(reference, sa, N)
-    # Reconstruct first column of bwt matrix
-    f_bwt, ltf = utils.RADIX_SORT_L2F(bwt, N)
-    # Find first occurrences of each character in f_bwt
-    c = [0, 0, 0, 0, 0, N] # A, C, G, T
-    j = 0
-    for i in range(N):
-        if j == 0 and f_bwt[i] == "A":
-            c[j] = i
-            j += 1
-        if j == 1 and f_bwt[i] == "C":
-            c[j] = i
-            j += 1
-        if j == 2 and f_bwt[i] == "G":
-            c[j] = i
-            j += 1
-        if j == 3 and f_bwt[i] == "N":
-            c[j] = i
-            j += 1
-        if j == 4 and f_bwt[i] == "T":
-            c[j] = i
-            j += 1
-    ref_data.append([rname, sa, bwt, ltf, c])
-    # Clean up Unnecessary objects
-
-    #del f_bwt TODO
     ref_fasta.close()
 
+    # Perform alignment
 
-    # Perform alignment TODO
-
-    qname = ""  # Line 1
-    seq = ""    # Line 2
-    quals = ""  # Line 4
+    qname = ""  # Line 1 in fasta format
+    seq = ""    # Line 2 in fasta format
+    quals = ""  # Line 4 in fasta format
     
     line_num = -1
     for line in fastq:
         line_num += 1
         if line_num % 4 == 0:
-            qname = line[1:-1]  # Don't grab \n character
+            qname = line[1:-1]  # Don't grab \n or > character
         elif line_num % 4 == 1:
             seq = line[:-1]     # Don't grab \n character
         elif line_num % 4 == 2:
@@ -185,7 +127,8 @@ def main():
             # Now use all previous info to align
             loc:int = 0
             for i in range(len(ref_data)):
-                # ref_data[i] = [rname, sa, bwt, ltf, Count vector]
+                # ref_data[i] = [Ref_Name, Suffix Array, BurrowsWheelerTransform, 
+                #                   LasttoFirst, CountVector]
                 loc = utils.FIND( 
                     SA=ref_data[i][1], BWT=ref_data[i][2], \
                     LTF=ref_data[i][3], C=ref_data[i][4], \
@@ -197,13 +140,12 @@ def main():
                         RNAME= ref_data[i][0],
                     ))
                     break
-            # If no exact match was found
+            # If no exact match was found no statement can be made about location
             if loc == 0:
                 outf.write(utils.GET_ALIGNMENT(
-                        QNAME=qname, TEMPLATE=seq, QUAL=quals, POS=loc,
+                        QNAME=qname, TEMPLATE=seq, QUAL=quals, POS=loc, \
                         RNAME= "*",
                 ))
-
     ref_fasta.close()
 
 if __name__ == '__main__':

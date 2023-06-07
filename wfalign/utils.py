@@ -51,6 +51,51 @@ def GET_FASTA_HEADER(SN:str = None, LN:str = None) -> str:
 
     return header
 
+def GENERATE_AUXS(REF:str, RNAME:str) -> list:
+    """
+    Calls other functions to generate all auxilury data structures needed for pattern matching. 
+    Those are as follows:
+
+
+    Parameters
+    ----------
+    REF : str
+        String to construct auxiliury data structures on.
+    RNAME : str
+        Name of reference string. Often Chr1 or simply 1
+    """
+
+    REF += "$"
+    N = len(REF)
+    # Construct Suffix Array
+    sa = SUFFIX_ARRAY(REF, N)
+
+    # Create BWT array of ref
+    bwt = BURROWS_WHEELER(REF, sa, N)
+    # Reconstruct first column of bwt matrix
+    f_bwt, ltf = RADIX_SORT_L2F(bwt, N)
+    # Find first occurrences of each character in f_bwt
+
+    c = [0, 0, 0, 0, 0, N] # A, C, G, N, T + 1 extra to get where T's end
+    j = 0
+    for i in range(N):
+        if j == 0 and f_bwt[i] == "A":
+            c[j] = i
+            j += 1
+        if j == 1 and f_bwt[i] == "C":
+            c[j] = i
+            j += 1
+        if j == 2 and f_bwt[i] == "G":
+            c[j] = i
+            j += 1
+        if j == 3 and f_bwt[i] == "N":
+            c[j] = i
+            j += 1
+        if j == 4 and f_bwt[i] == "T":
+            c[j] = i
+            j += 1
+    return [RNAME, sa, bwt, ltf, c]
+
 def RADIX_SORT_sufs(sufs:list, Q:int, N:int) -> list:
     """
     Return sorted list of suffix objects given list of suffix objects.

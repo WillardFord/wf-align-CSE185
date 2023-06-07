@@ -18,12 +18,14 @@ You can install `wf-align` with the following command:
 
 ```
 cd wf-align-CSE185
+```
+```
 python setup.py install
 ```
 
 Note: if you do not have root access, you can run the commands above with additional options to install locally:
+
 ```
-cd wf-align-CSE185
 python setup.py install --user
 ```
 
