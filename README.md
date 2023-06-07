@@ -2,7 +2,7 @@
 
 (Work in progress!)
 
-This is a demonstration project for CSE185. It implements a smaller, simpler version of bwa-mem. See the [BWA-MEM](https://bio-bwa.sourceforge.net/bwa.shtml) page for more details.
+This is a demonstration project for CSE185. It implements a smaller, simpler version of bwa-backtrack. See the [BWA](https://bio-bwa.sourceforge.net) page for more details.
 
 # Install instructions
 
