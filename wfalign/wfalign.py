@@ -185,15 +185,15 @@ def main():
             # Now use all previous info to align
             loc:int = 0
             for i in range(len(ref_data)):
-                # ref_data = [rname, sa, bwt, ltf]
+                # ref_data[i] = [rname, sa, bwt, ltf, Count vector]
                 loc = utils.FIND( 
-                    SA=ref_data[i][1], BWT=ref_data[i][2], 
-                    LTF=ref_data[i][3], C=ref_data[i][4], 
-                    PATTERN=seq, M=m,
-                ) + 1
+                    SA=ref_data[i][1], BWT=ref_data[i][2], \
+                    LTF=ref_data[i][3], C=ref_data[i][4], \
+                    PATTERN=seq, M=m, \
+                ) + 1 # sam files are 1 indexed
                 if loc > 0:
                     outf.write(utils.GET_ALIGNMENT(
-                        QNAME=qname, TEMPLATE=seq, QUAL=quals, POS=loc,
+                        QNAME=qname, TEMPLATE=seq, QUAL=quals, POS=loc, \
                         RNAME= ref_data[i][0],
                     ))
                     break
