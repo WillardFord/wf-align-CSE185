@@ -2,7 +2,6 @@
 Utilities for align
 """
 import sys
-import numpy as np
 
 class bcolors:
     HEADER = '\033[95m'
@@ -114,7 +113,7 @@ def SUFFIX_ARRAY(REF:str, N:int) -> list:
     N : str
         Length of REF. len(REF)
     """
-    dictionary = {"A":"B", "C":"C", "G":"D","T":"E", "$":"$"}
+    dictionary = {"A":"B", "C":"C", "G":"D","T":"F", "$":"$", "N":"E"}
     suffixes = [suffix() for _ in range(N)]
 
     for i in range(N):
@@ -135,7 +134,6 @@ def SUFFIX_ARRAY(REF:str, N:int) -> list:
         ind[suffixes[0].index] = 0
 
         for i in range(1, N):
-
             if (suffixes[i].rank[0] == prev_rank and
                 suffixes[i].rank[1] == suffixes[i - 1].rank[1]):
                 prev_rank = suffixes[i].rank[0]
@@ -159,7 +157,6 @@ def SUFFIX_ARRAY(REF:str, N:int) -> list:
     suffixArr = [0] * N
     for i in range(N):
         suffixArr[i] = suffixes[i].index
-
     return suffixArr
 
 """
@@ -189,7 +186,15 @@ def BURROWS_WHEELER(REF:str, SA:list,  N:int) -> list:
         bwt[i] = REF[SA[i]-1]
     return bwt
 
-def RADIX_SORT(BWT:list, N:int) -> list:
+"""
+Class to original indices and value for generating last 2 first vector
+"""
+class l2f_aux:
+    def __init__(self, i:int, val:str):
+        self.index = i
+        self.rank = val
+
+def RADIX_SORT_L2F(BWT:list, N:int,) -> list:
     """
     Return sorted list of suffix objects given list of suffix objects.
     Sorts using radix sort on suffix.rank[0] and suffix.rank[1].
@@ -203,6 +208,7 @@ def RADIX_SORT(BWT:list, N:int) -> list:
     N : int
         Length of BWT. len(BWT)
     """
+    l2fs = [l2f_aux(i, x) for i, x in enumerate(BWT)]
     output = [0] * N
 
     # Find norm values s.t. each value >= 1
@@ -210,83 +216,75 @@ def RADIX_SORT(BWT:list, N:int) -> list:
     min_value = "!"
     max_value = "Z"
     for i in range(N):
-        if ord(BWT[i]) - ord("A") > ord(max_value) - ord("A"):
-            max_value = ord(BWT[i]) - ord("A")
-        if ord(BWT[i]) - ord("A") < ord(min_value) - ord("A"):
-            min_value = ord(BWT[i]) - ord("A")
+        # We need to generate last to first array as well.
+        if ord(l2fs[i].rank) - ord("A") > ord(max_value) - ord("A"):
+            max_value = ord(l2fs[i].rank) - ord("A")
+        if ord(l2fs[i].rank) - ord("A") < ord(min_value) - ord("A"):
+            min_value = ord(l2fs[i].rank) - ord("A")
     alphabet_len = ord(max_value) - ord(min_value) + 1
-    norm = -ord(min_value)
+    norm = ord(min_value)
 
     # Sort
     count = [0] * alphabet_len
 
     for i in range(N):
-        count[ord(BWT[i]) - ord("A") +norm] += 1
+        count[ord(l2fs[i].rank) - ord("A") + norm] += 1
 
     for i in range(1, alphabet_len):
         count[i] += count[i - 1]
 
-    # Build the output array
+    # Build the output and l2f array
+    l2f = [0]*N
     i = N - 1
     while i >= 0:
-        index = ord(BWT[i]) - ord("A") +norm
-        output[count[index] - 1] = BWT[i]
+        index = ord(l2fs[i].rank) - ord("A") + norm
+        output[count[index] - 1] = l2fs[i].rank
+        l2f[l2fs[i].index] = count[index] - 1
         count[index] -= 1
         i -= 1
-    return output
+    return output, l2f
 
-def FIND(REF:str, SA:list, BWT:list, F_BWT:list, LTF:list) -> int: #TODO
+def FIND(SA:list, BWT:list, LTF:list, C:list,
+         PATTERN:str, M:int,) -> int:
     """
     Returns int representing first index of first character of
-    instance of sequence in reference
+    instance of sequence in reference. In the output value here is 1 indexed
+    to align with SAM file consistencies
 
     Parameters
     ----------
+    SA : list
+        Suffix Array representation of REF
     BWT : list
-        Set of characters to be sorted
-    N : int
-        Length of BWT. len(BWT)
-    """
-    # TODO
-    found:bool = False
-    
-    if not found:
-       return 0
-
-def LAST2FIRST(F_BWT:list, BWT:list, N:int) -> list:
-    """
-    Returns list of integers that denote where in F_BWT each character in BWT 
-    is located. Method inspired by setting up checkpoints from this video:
-
-    https://www.youtube.com/watch?v=byNR4CbYiPQ
-
-    Parameters
-    ----------
-    F_BWT : list
-        First column of BWT matrix
-    BWT : str
-        Last column of BWT matrix
-    N : int
-        Length of BWT. len(BWT)
+        Burrows Wheeler transformation representation of REF
+    LTF : list
+        Last to first vector of Burrows Wheeler transformation
+    C : list
+        List indicating starting indicies for each character in order
+        A, C, G, T
+    PATTERN : str
+        The pattern to match onto REF
     M : int
-        Length of a typical read
+        Length of PATTERN, len(PATTERN)
     """
-    # TODO Default M will need to be adjusted as we use different data types.
-    dic = {"A":0,"T":1,"C":2,"G":3,"N":4}
-    output = [0, 0, 0, 0, 0]*N//M
-    counts = [[0]*N//M]*5 # A, T, C, G
-    i = 0
-    j = 0
-    while i < N//M :
-        j = 0
-        while j < M and i*M+j < N :
-            counts[
-                dic[REF[    F_BWT[i*M+j]    ]]][i] += 1
-            j += 1
-        i += 1
-    
 
+    dic = {"A":0, "C":1, "G":2, "N":3, "T":4}
+    min = C[dic[PATTERN[M-1]]]
+    max = C[dic[PATTERN[M-1]]+1]
 
+    matches = range(min, max)
+    for i in range(1, M):
+        new_matches = []
+        for j in matches:
+            char = BWT[j]
+            if char == PATTERN[-i-1]:
+                new_matches.append(LTF[j])
+        if len(new_matches) == 0:
+            return -1
+        matches = new_matches
+
+    # Find only first match for simplicity
+    return SA[matches[0]]
 
 def GET_ALIGNMENT(QNAME:str, TEMPLATE:str, QUAL:str, POS:int,
                   RNAME:str) -> str: #TODO

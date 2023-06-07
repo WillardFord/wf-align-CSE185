@@ -92,6 +92,7 @@ def main():
     for line in ref_fasta.readlines():
         if line[0] == ">":
             if reference != "":
+                reference += "$"
                 N = len(reference)
                 # Construct Suffix Array
                 sa = utils.SUFFIX_ARRAY(reference, N)
@@ -99,9 +100,27 @@ def main():
                 # Create BWT array of ref
                 bwt = utils.BURROWS_WHEELER(reference, sa, N)
                 # Reconstruct first column of bwt matrix
-                f_bwt = utils.RADIX_SORT(bwt, N)
-                ltf = utils.LAST2FIRST(bwt, f_bwt, N)
-                ref_data.append([rname, reference, sa, bwt, f_bwt, ltf])
+                f_bwt, ltf = utils.RADIX_SORT_L2F(bwt, N)
+                # Find first occurrences of each character in f_bwt
+                c = [0, 0, 0, 0, 0, N] # A, C, G, T
+                j = 0
+                for i in range(N):
+                    if j == 0 and f_bwt[i] == "A":
+                        c[j] = i
+                        j += 1
+                    if j == 1 and f_bwt[i] == "C":
+                        c[j] = i
+                        j += 1
+                    if j == 2 and f_bwt[i] == "G":
+                        c[j] = i
+                        j += 1
+                    if j == 3 and f_bwt[i] == "N":
+                        c[j] = i
+                        j += 1
+                    if j == 4 and f_bwt[i] == "T":
+                        c[j] = i
+                        j += 1
+                ref_data.append([rname, sa, bwt, ltf, c])
             reference = ""
             rname = line[1:-1] # don't grab \n char
         else:
@@ -109,17 +128,40 @@ def main():
     
     # Because we only add aux data structures when we reach the next chromosome,
     # we manually add the last one here which has no subsequent chromosome.
+
+    reference += "$"
     N = len(reference)
     # Construct Suffix Array
     sa = utils.SUFFIX_ARRAY(reference, N)
     # Create BWT array of ref
     bwt = utils.BURROWS_WHEELER(reference, sa, N)
     # Reconstruct first column of bwt matrix
-    f_bwt = utils.RADIX_SORT(bwt, N)
-    ltf = utils.LAST2FIRST(bwt, f_bwt, N)
-    ref_data.append([rname, reference, sa, bwt, f_bwt, ltf])
+    f_bwt, ltf = utils.RADIX_SORT_L2F(bwt, N)
+    # Find first occurrences of each character in f_bwt
+    c = [0, 0, 0, 0, 0, N] # A, C, G, T
+    j = 0
+    for i in range(N):
+        if j == 0 and f_bwt[i] == "A":
+            c[j] = i
+            j += 1
+        if j == 1 and f_bwt[i] == "C":
+            c[j] = i
+            j += 1
+        if j == 2 and f_bwt[i] == "G":
+            c[j] = i
+            j += 1
+        if j == 3 and f_bwt[i] == "N":
+            c[j] = i
+            j += 1
+        if j == 4 and f_bwt[i] == "T":
+            c[j] = i
+            j += 1
+    ref_data.append([rname, sa, bwt, ltf, c])
+    # Clean up Unnecessary objects
 
+    #del f_bwt TODO
     ref_fasta.close()
+
 
     # Perform alignment TODO
 
@@ -139,20 +181,20 @@ def main():
         else:
             # can't slice because last line might not have \n character
             quals = line.replace("\n","")   
-
+            m = len(seq)
             # Now use all previous info to align
             loc:int = 0
             for i in range(len(ref_data)):
-                # ref_data = [rname, reference, sa, bwt, f_bwt, ltf]
-                loc = utils.FIND( # Only finds exact matches
-                    REF=ref_data[i][1], SA=ref_data[i][2], 
-                    BWT=ref_data[i][3], F_BWT=ref_data[i][4]
-                    LTF=ref_data[i][5]
-                )
+                # ref_data = [rname, sa, bwt, ltf]
+                loc = utils.FIND( 
+                    SA=ref_data[i][1], BWT=ref_data[i][2], 
+                    LTF=ref_data[i][3], C=ref_data[i][4], 
+                    PATTERN=seq, M=m,
+                ) + 1
                 if loc > 0:
                     outf.write(utils.GET_ALIGNMENT(
                         QNAME=qname, TEMPLATE=seq, QUAL=quals, POS=loc,
-                        RNAME= ref_data[0],
+                        RNAME= ref_data[i][0],
                     ))
                     break
             # If no exact match was found
@@ -160,7 +202,7 @@ def main():
                 outf.write(utils.GET_ALIGNMENT(
                         QNAME=qname, TEMPLATE=seq, QUAL=quals, POS=loc,
                         RNAME= "*",
-                    ))
+                ))
 
     ref_fasta.close()
 

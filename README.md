@@ -36,7 +36,10 @@ wf-align example-files/test_reference.fa example-files/test_reads.fastq
 
 This should produce the output below:
 ```
-hello
+@HD VN:1.6 SO:unknown
+SEQ_ID_1        0       chrTEST 3       255     10M     0       0       10      CTAGCTACGT      FFFFFFFFFF
+SEQ_ID_2        0       chrTEST2        1       255     10M     0       0       10      TAGCTAGGTT      HHHHHHHHHH
+SEQ_ID_3        0       chrTEST 57      255     8M      0       0       8       GCTAGCAT        HHHHHHHH
 ```
 
 To compare to output of `bwa mem`, run:
