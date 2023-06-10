@@ -50,11 +50,6 @@ SEQ_ID_2        0       chrTEST2        1       255     10M     0       0       
 SEQ_ID_3        0       chrTEST 57      255     8M      0       0       8       GCTAGCAT        HHHHHHHH
 ```
 
-To compare to output of `bwa mem`, run:
-```
-bwa mem example-files/test_reference.fa example-files/test_reads.fastq
-```
-
 # wf-align options
 
 There are 2 required inputs to `wf-align`, a reference fasta file and a fastq file containing reads. Users may additionally specify the options below:
