@@ -446,7 +446,8 @@ def GET_METRICS(TOT_RDS_LEN:int, TOT_REF_LEN:int,
 
     #metrics += "Percent reads uniquely aligned:\t" + (NUM_UA)/NUM_RDS + "\n"
     #metrics += "Percent reads non-uniquely aligned:\t" + (NUM_RDS-NUM_NA-NUM_UA)/NUM_RDS + "\n"
-    metrics += "Percent reads aligned:\t" + str((NUM_RDS-NUM_NA)/NUM_RDS) + "\n"
-    metrics += "Percent reads unaligned:\t" + str((NUM_NA)/NUM_RDS) + "\n"
+
+    metrics += "Percent reads aligned:\t" + str(((NUM_RDS-NUM_NA)/NUM_RDS) if NUM_RDS > 0 else 0 )  + "\n"
+    metrics += "Percent reads unaligned:\t" + str(((NUM_NA)/NUM_RDS) if NUM_RDS > 0 else 0) + "\n"
 
     return metrics

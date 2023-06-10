@@ -1,8 +1,6 @@
 # wf-align (CSE185 Project Demo)
 
-(Work in progress!)
-
-This is a demonstration project for CSE185. It implements a smaller, simpler version of bwa-backtrack. See the [BWA](https://bio-bwa.sourceforge.net) page for more details.
+This is a demonstration project for CSE185. It implements a smaller, simpler version of bwa-backtrack. See the [BWA](https://bio-bwa.sourceforge.net) page for more details. For the materials that I actually turned in summarizing this project, refer to the final-project-files directory.
 
 # Install instructions
 
@@ -67,13 +65,15 @@ There are 2 required inputs to `wf-align`, a reference fasta file and a fastq fi
 
 # SARS Cov2 Example
 
-Reference genome available [here](https://www.ncbi.nlm.nih.gov/nuccore/NC_045512).
+I've benchmarked wf-align against BWA-MEM using a SARS Cov2 reference genome in the benchmark file.
 
 # File format
 
 The output file format is the same as the bwa mem method, a sam file. See: https://samtools.github.io/hts-specs/SAMv1.pdf
 
 # Testing
+
+UNDER CONSTRUCTION: unit tests not yet implemented
 
 To run tests:
 ```
@@ -86,7 +86,7 @@ python -m pytest --cov=.
 
 # Methodology
 
-I used several different resources to come up with my own hand-stitched methodology:
+I used a modified version of BWA-backtrack algorithm that runs in O(length of reference genome * length of reads) using O(length of reference genome) space. For more details refer to the methods section of the Project Report available in the final-project-files directory.
 
 # Sources
 

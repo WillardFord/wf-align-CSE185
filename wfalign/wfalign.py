@@ -68,7 +68,7 @@ def main():
 
     if not os.path.exists(args.fastq):
         utils.ERROR("{fastq} does not exist".format(fastq=args.fastq))
-    if args.fastq[-6:] != ".fastq" and args.fastq[-3:] != ".fa":
+    if args.fastq[-6:] != ".fastq" and args.fastq[-3:] != ".fq":
         utils.ERROR("{fastq} has wrong file ending. Is it in the correct format? Refer to: " \
                     "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2847217"\
                     .format(fastq=args.fastq))

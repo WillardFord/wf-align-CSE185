@@ -1,5 +1,8 @@
 # Visuals used in final project presentation
 
+## [Link to final presentation](https://docs.google.com/presentation/d/1uvJgs_4SMhLVLQQmBMyschkRXf2waIVUnMq75tJRDF0/edit?usp=sharing)
+
+
 | Tool | Method | Run time | Space |
 |------|--------|----------| ----------|
 |BWA MEM| Maximal Exact Matches | Linear | Linear |
