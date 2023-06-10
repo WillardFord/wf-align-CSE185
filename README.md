@@ -85,11 +85,7 @@ I used a modified version of BWA-backtrack algorithm that runs in O(length of re
 
 # Sources
 
-https://www.youtube.com/watch?v=byNR4CbYiPQ&list=PLQ-85lQlPqFP-q0Ig_GdjWohbC9C3f8tz&index=8
-
-https://www.cs.cmu.edu/~15451-f18/lectures/lec26-suffarray.pdf
-
-https://www.cs.cmu.edu/~15451-f18/lectures/lec25-bwt.pdf
+Available in final-project-files/Project-Report.pdf
 
 # Contributors
 
