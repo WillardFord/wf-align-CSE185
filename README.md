@@ -66,19 +66,6 @@ I've benchmarked wf-align against BWA-MEM using a SARS Cov2 reference genome in 
 
 The output file format is the same as the bwa mem method, a sam file. See: https://samtools.github.io/hts-specs/SAMv1.pdf
 
-# Testing
-
-UNDER CONSTRUCTION: unit tests not yet implemented
-
-To run tests:
-```
-# Run command line tests
-sh tests/cmdline_tests.sh
-
-# Run unit tests
-python -m pytest --cov=.
-```
-
 # Methodology
 
 I used a modified version of BWA-backtrack algorithm that runs in O(length of reference genome * length of reads) using O(length of reference genome) space. For more details refer to the methods section of the Project Report available in the final-project-files directory.
